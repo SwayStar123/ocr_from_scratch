@@ -82,9 +82,6 @@ fn main() {
         vec
     }).collect();
 
-    // zip the two vectors together to make a vector of tuples
-    let training_data: Vec<(Vec<f64>, Vec<f64>)> = inputs.iter().zip(targets.iter()).map(|(x, y)| (x.to_owned(), y.to_owned())).collect();
-
     let test_inputs: Vec<Vec<f64>> = mnist.test_data.iter().map(|x| x.iter().map(|y| *y as f64 / 256.0).collect()).collect();
     let test_targets: Vec<Vec<f64>> = mnist.test_labels.iter().map(|x| {
         let mut vec = vec![0.0; 10];
@@ -95,7 +92,7 @@ fn main() {
     // zip the two vectors together to make a vector of tuples
     // let test_data: Vec<(Vec<f64>, Vec<f64>)> = test_inputs.iter().zip(test_targets.iter()).map(|(x, y)| (x.to_owned(), y.to_owned())).collect();
 
-    let mut network = Network::new(vec![784, 100, 100, 10], 0.005, SIGMOID);
+    let mut network = Network::new(vec![784, 10, 15, 10], 0.015, SIGMOID);
     // network.load("nn.json".to_string());
 
     // print the accuracy before trainig
@@ -120,7 +117,7 @@ fn main() {
 
     // time before training
     let start = time::Instant::now();
-    network.train(inputs.clone(), targets, 10);
+    network.train(inputs.clone(), targets, 1);
     // time after training
     let end = time::Instant::now();
     println!("Time taken: {}s", (end - start).as_secs());

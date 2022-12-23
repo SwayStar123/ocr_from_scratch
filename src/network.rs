@@ -6,8 +6,6 @@ use std::{
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, json};
 
-use rand::{thread_rng, seq::SliceRandom};
-
 use super::{activations::Activation, matrix::Matrix};
 
 pub struct Network<'a> {
@@ -90,29 +88,8 @@ impl Network<'_> {
 		}
 	}
 
-	pub fn back_propogate_with_custom_data(&mut self, outputs: Vec<f64>, targets: Vec<f64>, data: Vec<Matrix>) {
-		if targets.len() != self.layers[self.layers.len() - 1] {
-			panic!("Invalid targets length");
-		}
-
-		let parsed = Matrix::from(vec![outputs]);
-		let mut errors = Matrix::from(vec![targets]).subtract(&parsed).transpose();
-		let mut gradients = parsed.map(self.activation.derivative).transpose();
-
-		for i in (0..self.layers.len() - 1).rev() {
-			gradients = gradients
-				.dot_multiply(&errors)
-				.map(&|x| x * self.learning_rate);
-
-			self.weights[i] = self.weights[i].add(&gradients.multiply(&data[i].transpose()));
-			self.biases[i] = self.biases[i].add(&gradients);
-
-			errors = self.weights[i].transpose().multiply(&errors);
-			gradients = data[i].map(self.activation.derivative);
-		}
-	}
-
 	pub fn train(&mut self, inputs: Vec<Vec<f64>>, targets: Vec<Vec<f64>>, epochs: u16) {
+		// count time used for feed forward and back propogation seperately
 		for i in 1..=epochs {
 			if epochs < 100 || i % (epochs / 100) == 0 {
 				println!("Epoch {} of {}", i, epochs);
@@ -120,65 +97,6 @@ impl Network<'_> {
 			for j in 0..inputs.len() {
 				let outputs = self.feed_forward(inputs[j].clone());
 				self.back_propogate(outputs, targets[j].clone());
-			}
-		}
-	}
-
-	pub fn batch_train(&mut self, training_data: Vec<(Vec<f64>, Vec<f64>)>, epochs: u16, mini_batch_size: u16) {
-		for i in 1..=epochs {
-			if epochs < 100 || i % (epochs / 100) == 0 {
-				println!("Epoch {} of {}", i, epochs);
-			}
-			// shuffle training data
-			let mut rng = thread_rng();
-			let mut t_data = training_data.clone();
-			t_data.shuffle(&mut rng);
-
-			// split into mini batches
-			let mini_batches = t_data.chunks(mini_batch_size as usize).collect::<Vec<&[(Vec<f64>, Vec<f64>)]>>();
-
-			// train on each mini batch by averaging the errors
-			for mini_batch in mini_batches {
-				let mut batch_errors = vec![];
-				let (inputs, targets) = mini_batch.iter().fold((vec![], vec![]), |(mut inputs, mut targets), (input, target)| {
-					inputs.push(input.clone());
-					targets.push(target.clone());
-					(inputs, targets)
-				});
-
-				for j in 0..inputs.len() {
-					let _ = self.feed_forward(inputs[j].clone());
-					batch_errors.push(self.data.clone());
-				}
-
-				// avg the gradients
-
-				// transpose the batch_errors to get layer wise errors
-				let layer_wise_errors: Vec<Vec<Matrix>> = {
-					let len = batch_errors[0].len();
-					let mut iters: Vec<_> = batch_errors.into_iter().map(|n| n.into_iter()).collect();
-					(0..len)
-						.map(|_| {
-							iters
-								.iter_mut()
-								.map(|n| n.next().unwrap())
-								.collect::<Vec<Matrix>>()
-						})
-						.collect()
-				};
-
-				// averaging using Matrix::average(Vec<Matrix>)
-				let mut layer_wise_avg_errors = vec![];
-				for errors in layer_wise_errors {
-					let avg_errors = Matrix::average(errors);
-					layer_wise_avg_errors.push(avg_errors);
-				}
-
-				// back propogate with the averaged errors
-				for j in 0..inputs.len() {
-					let output = self.feed_forward(inputs[j].clone());
-					self.back_propogate_with_custom_data(output, targets[j].clone(), layer_wise_avg_errors.clone());
-				}
 			}
 		}
 	}
