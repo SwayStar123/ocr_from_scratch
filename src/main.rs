@@ -50,7 +50,7 @@ fn main() {
     network.save("nn.json".to_string());
 }
 
-fn accuracy(nn: &mut Network, test_data: Vec<Vec<f64>>, test_labels: Vec<Vec<f64>>) -> f64 {
+fn accuracy(nn: &mut Network, test_data: Vec<Vec<f64>>, test_labels: Vec<Vec<f64>>) -> i32 {
     let mut correct = 0;
     for i in 0..test_data.len() {
         let output = nn.feed_forward(test_data[i].to_owned());
@@ -66,5 +66,5 @@ fn accuracy(nn: &mut Network, test_data: Vec<Vec<f64>>, test_labels: Vec<Vec<f64
             correct += 1;
         }
     }
-    correct as f64 / test_data.len() as f64
+    correct
 }
