@@ -29,7 +29,7 @@ fn main() {
 
     let mut network = Network::new(vec![784, 10, 15, 10], 0.015, SIGMOID);
 
-    let correct = accuracy(&mut network, test_inputs, test_targets.clone());
+    let correct = accuracy(&mut network, test_inputs.clone(), test_targets.clone());
 
     println!("Accuracy: {}/{}", correct, test_targets.len());
 
@@ -42,7 +42,7 @@ fn main() {
     // network.batch_train(training_data, 10, 10);
 
     //count how many test samples are correctly classified
-    let correct = accuracy(&mut network, test_inputs, test_targets.clone());
+    let correct = accuracy(&mut network, test_inputs.clone(), test_targets.clone());
 
     println!("Accuracy: {}/{}", correct, test_targets.len());
 
