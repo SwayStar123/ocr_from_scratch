@@ -9,7 +9,7 @@
 // }
 
 // impl Matrix {
-// 	pub fn zeros(rows: usize, cols: usize) -> Matrix {
+// 	pub fn zeroes(rows: usize, cols: usize) -> Matrix {
 // 		Matrix {
 // 			rows,
 // 			cols,
@@ -20,7 +20,7 @@
 // 	pub fn random(rows: usize, cols: usize) -> Matrix {
 // 		let mut rng = thread_rng();
 
-// 		let mut res = Matrix::zeros(rows, cols);
+// 		let mut res = zeroes(rows, cols);
 // 		for i in 0..rows {
 // 			for j in 0..cols {
 // 				res.data[i][j] = rng.gen::<f64>() * 2.0 - 1.0;
@@ -43,7 +43,7 @@
 // 			panic!("Attempted to multiply by matrix of incorrect dimensions. self = {} x {}, other = {} x {}", self.rows, self.cols, other.rows, other.cols);
 // 		}
 
-// 		let mut res = Matrix::zeros(self.rows, other.cols);
+// 		let mut res = zeroes(self.rows, other.cols);
 
 // 		for i in 0..self.rows {
 // 			for j in 0..other.cols {
@@ -64,7 +64,7 @@
 // 			panic!("Attempted to add matrix of incorrect dimensions. self = {} x {}, other = {} x {}", self.rows, self.cols, other.rows, other.cols);
 // 		}
 
-// 		let mut res = Matrix::zeros(self.rows, self.cols);
+// 		let mut res = zeroes(self.rows, self.cols);
 
 // 		for i in 0..self.rows {
 // 			for j in 0..self.cols {
@@ -80,7 +80,7 @@
 // 			panic!("Attempted to dot multiply by matrix of incorrect dimensions. self = {} x {}, other = {} x {}", self.rows, self.cols, other.rows, other.cols);
 // 		}
 
-// 		let mut res = Matrix::zeros(self.rows, self.cols);
+// 		let mut res = zeroes(self.rows, self.cols);
 
 // 		for i in 0..self.rows {
 // 			for j in 0..self.cols {
@@ -96,7 +96,7 @@
 // 			panic!("Attempted to subtract matrix of incorrect dimensions. self = {} x {}, other = {} x {}", self.rows, self.cols, other.rows, other.cols);
 // 		}
 
-// 		let mut res = Matrix::zeros(self.rows, self.cols);
+// 		let mut res = zeroes(self.rows, self.cols);
 
 // 		for i in 0..self.rows {
 // 			for j in 0..self.cols {
@@ -118,7 +118,7 @@
 // 	}
 
 // 	pub fn transpose(&self) -> Matrix {
-// 		let mut res = Matrix::zeros(self.cols, self.rows);
+// 		let mut res = zeroes(self.cols, self.rows);
 
 // 		for i in 0..self.rows {
 // 			for j in 0..self.cols {
@@ -131,7 +131,7 @@
 
 // 	pub fn average(matrixes: Vec<Matrix>) -> Matrix {
 // 		let len = matrixes.len();
-// 		let mut res = Matrix::zeros(matrixes[0].rows, matrixes[0].cols);
+// 		let mut res = zeroes(matrixes[0].rows, matrixes[0].cols);
 
 // 		for matrix in matrixes {
 // 			res = res.add(&matrix);
@@ -171,7 +171,8 @@
 
 library matrix;
 
-use sway_libs::fixed_point::ufp::ufp64::UFP64;
+use sway_libs::ufp64::UFP64;
+use std::logging::log;
 
 pub fn zeroes_vec(ref mut vec: Vec<UFP64>, len: u64) {
     let mut i = 0;
@@ -184,52 +185,73 @@ pub fn zeroes_vec(ref mut vec: Vec<UFP64>, len: u64) {
 pub struct Matrix {
     rows: u64,
     cols: u64,
-    // temporarily in UFP64 as f64 is not supported yet
+    // temporarily in UFP64 as IFP64 is not supported yet
     data: Vec<Vec<UFP64>>,
 }
 
+pub fn zeroes(rows: u64, cols: u64) -> Matrix {
+    let mut data = Vec::with_capacity(rows);
+    let mut i = 0;
+    while i < rows {
+        let mut row = Vec::with_capacity(cols);
+        zeroes_vec(row, cols);
+        data.push(row);
+        i += 1;
+    }
+
+    Matrix {
+        rows,
+        cols,
+        data,
+    }
+}
+
+// impl Matrix {
+//     pub fn new(rows: u64, cols: u64, data: Vec<Vec<UFP64>>) -> Matrix {
+//         Matrix {
+//             rows,
+//             cols,
+//             data,
+//         }
+//     }
+
+//     pub fn zeroes(rows: u64, cols: u64) -> Matrix {
+//         let mut data = Vec::with_capacity(rows);
+//         let mut i = 0;
+//         while i < rows {
+//             let mut row = Vec::with_capacity(cols);
+//             zeroes_vec(row, cols);
+//             data.push(row);
+//             i += 1;
+//         }
+
+//         Matrix {
+//             rows,
+//             cols,
+//             data,
+//         }
+//     }
+
+//     pub fn from(data: Vec<Vec<UFP64>>) -> Matrix {
+//         Matrix {
+//             rows: data.len(),
+//             cols: data.get(0).unwrap().len(),
+//             data,
+//         }
+//     }
+// }
+
 impl Matrix {
-    pub fn new(rows: u64, cols: u64, data: Vec<Vec<UFP64>>) -> Matrix {
-        Matrix {
-            rows,
-            cols,
-            data,
-        }
-    }
-
-    pub fn zeros(rows: u64, cols: u64) -> Matrix {
-        let mut data = Vec::with_capacity(rows);
-        let mut i = 0;
-        while i < rows {
-            let mut row = Vec::with_capacity(cols);
-            zeroes_vec(ref row, cols);
-            data.push(row);
-            i += 1;
-        }
-
-        Matrix {
-            rows,
-            cols,
-            data,
-        }
-    }
-
-    pub fn from(data: Vec<Vec<UFP64>>) -> Matrix {
-        Matrix {
-            rows: data.len(),
-            cols: data.get(0).unwrap().len(),
-            data,
-        }
-    }
-
     pub fn multiply(self, other: Matrix) -> Matrix {
         if self.cols != other.rows {
-            revert("Attempted to multiply matrix of incorrect dimensions");
             log(("self.rows, self.cols = ", self.rows, self.cols));
             log(("other.rows, other.cols = ", other.rows, other.cols));
+            log("Attempted to multiply matrix of incorrect dimensions");
+            revert(0);
+            
         }
 
-        let mut res = Matrix::zeros(self.rows, other.cols);
+        let mut res = zeroes(self.rows, other.cols);
 
         let mut i = 0;
         while i < self.rows {
@@ -237,7 +259,8 @@ impl Matrix {
             while j < other.cols {
                 let mut k = 0;
                 while k < self.cols {
-                    res.data.get(i).set(j, res.data.get(i).get(j) + self.data.get(i).get(k) * other.data.get(k).get(j));
+                    
+                    res.data.get(i).unwrap().set(j, res.data.get(i).unwrap().get(j).unwrap() + self.data.get(i).unwrap().get(k).unwrap() * other.data.get(k).unwrap().get(j).unwrap());
                     k += 1;
                 }
                 j += 1;
@@ -250,18 +273,19 @@ impl Matrix {
 
     pub fn add(self, other: Matrix) -> Matrix {
         if self.rows != other.rows || self.cols != other.cols {
-            revert("Attempted to add matrix of incorrect dimensions");
             log(("self.rows, self.cols = ", self.rows, self.cols));
             log(("other.rows, other.cols = ", other.rows, other.cols));
+            log("Attempted to add matrix of incorrect dimensions");
+            revert(0);
         }
 
-        let mut res = Matrix::zeros(self.rows, self.cols);
+        let mut res = zeroes(self.rows, self.cols);
 
         let mut i = 0;
         while i < self.rows {
             let mut j = 0;
             while j < self.cols {
-                res.data.get(i).set(j, self.data.get(i).get(j) + other.data.get(i).get(j));
+                res.data.get(i).unwrap().set(j, self.data.get(i).unwrap().get(j).unwrap() + other.data.get(i).unwrap().get(j).unwrap());
                 j += 1;
             }
             i += 1;
@@ -272,18 +296,19 @@ impl Matrix {
 
     pub fn subtract(self, other: Matrix) -> Matrix {
         if self.rows != other.rows || self.cols != other.cols {
-            revert("Attempted to subtract matrix of incorrect dimensions");
             log(("self.rows, self.cols = ", self.rows, self.cols));
             log(("other.rows, other.cols = ", other.rows, other.cols));
+            log("Attempted to subtract matrix of incorrect dimensions");
+            revert(0);
         }
 
-        let mut res = Matrix::zeros(self.rows, self.cols);
+        let mut res = zeroes(self.rows, self.cols);
 
         let mut i = 0;
         while i < self.rows {
             let mut j = 0;
             while j < self.cols {
-                res.data.get(i).set(j, self.data.get(i).get(j) - other.data.get(i).get(j));
+                res.data.get(i).unwrap().set(j, self.data.get(i).unwrap().get(j).unwrap() - other.data.get(i).unwrap().get(j).unwrap());
                 j += 1;
             }
             i += 1;
@@ -293,13 +318,13 @@ impl Matrix {
     }
 
     pub fn transpose(self) -> Matrix {
-        let mut res = Matrix::zeros(self.cols, self.rows);
+        let mut res = zeroes(self.cols, self.rows);
 
         let mut i = 0;
         while i < self.rows {
             let mut j = 0;
             while j < self.cols {
-                res.data.get(j).set(i, self.data.get(i).get(j));
+                res.data.get(j).unwrap().set(i, self.data.get(i).unwrap().get(j).unwrap());
                 j += 1;
             }
             i += 1;
