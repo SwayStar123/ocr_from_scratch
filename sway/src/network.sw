@@ -1,0 +1,95 @@
+library network;
+
+dep matrix;
+
+use sway_libs::ufp64::UFP64;
+use std::logging::log;
+use matrix::Matrix;
+
+pub struct Network {
+    layers: Vec<u64>,
+    weights: Vec<Matrix>,
+    biases: Vec<Matrix>,
+    data: Vec<Matrix>,
+    learning_rate: UFP64,
+}
+
+impl Network {
+    pub fn new(layers: Vec<u64>, learning_rate: UFP64) -> Network {
+        let mut weights: Vec<Matrix> = Vec::new();
+        let mut biases: Vec<Matrix> = Vec::new();
+        let mut i = 0;
+        while i < layers.len() - 1 {
+            let weight = Matrix::random(layers.get(i + 1).unwrap(), layers.get(i).unwrap());
+            weights.push(weight);
+            let bias = Matrix::random(layers.get(i + 1).unwrap(), 1);
+            biases.push(bias);
+            i += 1;
+        }
+        Network {
+            layers,
+            weights,
+            biases,
+            data: Vec::new::<Vec<Matrix>>(),
+            learning_rate,
+        }
+    }
+
+    pub fn feedforward(ref mut self, inputs: Vec<UFP64>) -> Vec<UFP64> {
+        if inputs.len() != self.layers.get(0).unwrap() {
+            log("Invalid inputs length");
+            revert(0);
+        }
+
+        let mut current: Vec<Vec<UFP64>> = Vec::new();
+        current.push(inputs);
+        let mut current = Matrix::from(current).transpose();
+
+        let mut data: Vec<Vec<UFP64>> = Vec::new();
+        data.push(current.clone());
+        self.data = data;
+
+        let mut i = 0;
+        while i < self.layers.len() - 1 {
+            current = self.weights.get(i).unwrap()
+                .multiply(current)
+                .add(self.biases.get(i).unwrap())
+                .sigmoid_every_element();
+            self.data.push(current);
+            i += 1;
+        }
+        current.transpose().data.get(0).unwrap()
+    }
+
+    pub fn back_propogate(ref mut self, outputs: Vec<UFP64>, targets: Vec<UFP64>) {
+        if targets.len() != self.layers.get(self.layers.len().unwrap() - 1) {
+            log("Invalid targets length");
+            revert(0);
+        }
+
+        let mut parsed: Vec<Vec<UFP64>> = Vec::new();
+        parsed.push(outputs);
+        let parsed = Matrix::from(parsed);
+
+        let mut errors: Vec<Vec<UFP64>> = Vec::new();
+        errors.push(targets);
+        let mut errors = Matrix::from(errors).subtract(parsed).transpose();
+
+        let mut gradients = parsed.sigmoid_derivative_every_element().transpose();
+
+        let mut i = self.layers.len() - 1;
+        while i > 0 {
+            gradients = gradients
+                .dot_multiply(errors)
+                .multiply_every_element(self.learning_rate));
+
+            self.weights.set(i, self.weights.get(i).unwrap().add(gradients.multiply(self.data.get(i).unwrap().transpose())));
+            self.biases.set(i, self.biases.get(i).unwrap().add(gradients));
+
+            errors = self.weights.get(i).unwrap().transpose().multiply(errors);
+            gradients = self.data.get(i).unwrap().sigmoid_derivative_every_element();
+
+            i -= 1;
+        }
+    }
+}
