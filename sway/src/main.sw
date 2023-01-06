@@ -4,9 +4,9 @@ dep network;
 dep utils;
 
 use network::Network;
-use utils::StorageMatrixVec;
-use sway_libs::ufp64::UFP64;
 use std::storage::StorageVec;
+use sway_libs::ufp64::UFP64;
+use utils::StorageMatrixVec;
 
 abi MyContract {
     #[storage(read, write)]
@@ -47,13 +47,7 @@ impl MyContract for Contract {
             layers.push(storage.layers.get(i).unwrap());
             i += 1;
         }
-        let mut network = Network {
-            layers: layers,
-            weights: storage.weights.to(),
-            biases: storage.biases.to(),
-            learning_rate: storage.learning_rate,
-            data: Vec::new(),
-        };
+        let mut network = Network { layers: layers, weights: storage.weights.to(), biases: storage.biases.to(), learning_rate: storage.learning_rate, data: Vec::new()};
 
         network.feed_forward(input)
     }
@@ -66,13 +60,7 @@ impl MyContract for Contract {
             layers.push(storage.layers.get(i).unwrap());
             i += 1;
         }
-        let mut network = Network {
-            layers: layers,
-            weights: storage.weights.to(),
-            biases: storage.biases.to(),
-            learning_rate: storage.learning_rate,
-            data: Vec::new(),
-        };
+        let mut network = Network { layers: layers, weights: storage.weights.to(), biases: storage.biases.to(), learning_rate: storage.learning_rate, data: Vec::new()};
 
         network.back_propogate(input, expected);
 

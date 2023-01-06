@@ -2,9 +2,9 @@ library network;
 
 dep matrix;
 
-use sway_libs::ufp64::UFP64;
-use std::logging::log;
 use matrix::Matrix;
+use std::logging::log;
+use sway_libs::ufp64::UFP64;
 
 pub struct Network {
     layers: Vec<u64>,
@@ -30,12 +30,12 @@ impl Network {
             layers,
             weights,
             biases,
-            data: Vec::new::<Vec<Matrix>>(),
+            data: Vec::new(),
             learning_rate,
         }
     }
 
-    pub fn feedforward(ref mut self, inputs: Vec<UFP64>) -> Vec<UFP64> {
+    pub fn feed_forward(ref mut self, inputs: Vec<UFP64>) -> Vec<UFP64> {
         if inputs.len() != self.layers.get(0).unwrap() {
             log("Invalid inputs length");
             revert(0);
@@ -45,16 +45,13 @@ impl Network {
         current.push(inputs);
         let mut current = Matrix::from(current).transpose();
 
-        let mut data: Vec<Vec<UFP64>> = Vec::new();
-        data.push(current.clone());
+        let mut data: Vec<Matrix> = Vec::new();
+        data.push(current);
         self.data = data;
 
         let mut i = 0;
         while i < self.layers.len() - 1 {
-            current = self.weights.get(i).unwrap()
-                .multiply(current)
-                .add(self.biases.get(i).unwrap())
-                .sigmoid_every_element();
+            current = self.weights.get(i).unwrap().multiply(current).add(self.biases.get(i).unwrap()).sigmoid_every_element();
             self.data.push(current);
             i += 1;
         }
@@ -62,7 +59,8 @@ impl Network {
     }
 
     pub fn back_propogate(ref mut self, outputs: Vec<UFP64>, targets: Vec<UFP64>) {
-        if targets.len() != self.layers.get(self.layers.len().unwrap() - 1) {
+        if targets.len() != self.layers.get(self.layers.len() - 1).unwrap()
+        {
             log("Invalid targets length");
             revert(0);
         }
@@ -79,9 +77,7 @@ impl Network {
 
         let mut i = self.layers.len() - 1;
         while i > 0 {
-            gradients = gradients
-                .dot_multiply(errors)
-                .multiply_every_element(self.learning_rate));
+            gradients = gradients.dot_multiply(errors).multiply_every_element(self.learning_rate);
 
             self.weights.set(i, self.weights.get(i).unwrap().add(gradients.multiply(self.data.get(i).unwrap().transpose())));
             self.biases.set(i, self.biases.get(i).unwrap().add(gradients));

@@ -1,7 +1,6 @@
 library matrix;
 
 dep activations;
-dep network;
 
 use sway_libs::ufp64::UFP64;
 use std::logging::log;
@@ -48,23 +47,21 @@ impl Matrix {
         }
     }
 
-    pub fn zeroes(rows: u64, cols: u64) -> Matrix {
-        let mut data = Vec::with_capacity(rows);
-        let mut i = 0;
-        while i < rows {
-            let mut row = Vec::with_capacity(cols);
-            zeroes_vec(row, cols);
-            data.push(row);
-            i += 1;
-        }
-
-        Matrix {
-            rows,
-            cols,
-            data,
-        }
-    }
-
+    // pub fn zeroes(rows: u64, cols: u64) -> Matrix {
+    //     let mut data = Vec::with_capacity(rows);
+    //     let mut i = 0;
+    //     while i < rows {
+    //         let mut row = Vec::with_capacity(cols);
+    //         zeroes_vec(row, cols);
+    //         data.push(row);
+    //         i += 1;
+    //     }
+    //     Matrix {
+    //         rows,
+    //         cols,
+    //         data,
+    //     }
+    // }
     pub fn from(data: Vec<Vec<UFP64>>) -> Matrix {
         Matrix {
             rows: data.len(),
@@ -81,7 +78,6 @@ impl Matrix {
             log(("other.rows, other.cols = ", other.rows, other.cols));
             log("Attempted to multiply matrix of incorrect dimensions");
             revert(0);
-            
         }
 
         let mut res = zeroes(self.rows, other.cols);
@@ -92,7 +88,6 @@ impl Matrix {
             while j < other.cols {
                 let mut k = 0;
                 while k < self.cols {
-                    
                     res.data.get(i).unwrap().set(j, res.data.get(i).unwrap().get(j).unwrap() + self.data.get(i).unwrap().get(k).unwrap() * other.data.get(k).unwrap().get(j).unwrap());
                     k += 1;
                 }
