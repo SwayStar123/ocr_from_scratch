@@ -4,7 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+getrandom = { version = "0.2", features = ["js"] }
 rand = "0.8.5"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 rust-mnist = "0.1.4"
+yew = { version = "0.20.0", features = ["csr"] }
