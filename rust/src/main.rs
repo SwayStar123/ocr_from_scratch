@@ -60,6 +60,7 @@ use yew::prelude::*;
 struct Model<'a> {
     value: [f64; 784],
     nn: Network<'a>,
+    guess: Option<usize>,
 }
 
 enum Msg {
@@ -74,10 +75,11 @@ impl Component for Model<'static> {
 
     fn create(ctx: &Context<Self>) -> Self {
         let mut nn = Network::new(vec![784, 10, 15, 10], 0.015, SIGMOID);
-        nn.load("nn.json".to_string());
+        // nn.load("nn.json".to_string());
         Self {
             value: [0.0; 784],
             nn,
+            guess: None,
         }
     }
 
@@ -99,40 +101,47 @@ impl Component for Model<'static> {
                         max_index = i;
                     }
                 }
-                println!("The neural network thinks this is a {}", max_index);
+                
+                self.guess = Some(max_index);
             }
         }
         true
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let grid = (0..784).map(|i| {
-            let color = if self.value[i] == 0.0 {
-                "white"
-            } else {
-                "black"
-            };
-            html! {
-                <div class="grid-item" style={format!("background-color: {}", color)} onclick={
-                    ctx.link().callback(move |_| Msg::Clicked(i))
-                }></div>
+        let mut rows: Vec<Html> = vec![];
+        for i in 0..28 {
+            let mut cols: Vec<Html> = vec![];
+            for j in 0..28 {
+                let index = i * 28 + j;
+                let color = if self.value[index] == 0.0 { "white" } else { "black" };
+                cols.push(html! {
+                    <div
+                        style={format!("background-color: {}; width: 15px; height: 15px; border: 1px solid black", color)}
+                        onclick={ctx.link().callback(move |_| Msg::Clicked(index))}
+                    ></div>
+                });
             }
-        });
+            rows.push(html! {
+                <div style="display: flex">{cols}</div>
+            });
+        }
         html! {
             <div>
-                <div class="grid-container">
-                    { for grid }
+                <div style="display: flex">
+                    <button onclick={ctx.link().callback(|_| Msg::Clear)}>{"Clear"}</button>
+                    <button onclick={ctx.link().callback(|_| Msg::Guess)}>{"Guess"}</button>
                 </div>
-                <button onclick={ctx.link().callback(|_| Msg::Clear)}>{ "Clear" }</button>
-                <button onclick={ctx.link().callback(|_| Msg::Guess)}>{ "Guess" }</button>
+                <div style="display: flex; flex-direction: column">{rows}</div>
+                <div>{format!("Guess: {:?}", self.guess)}</div>
             </div>
         }
     }
 }
-
 fn main() {
     yew::Renderer::<Model>::new().render();
 }
+
 
 fn accuracy(nn: &mut Network, test_data: Vec<Vec<f64>>, test_labels: Vec<Vec<f64>>) -> i32 {
     let mut correct = 0;
