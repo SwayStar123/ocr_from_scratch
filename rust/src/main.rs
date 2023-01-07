@@ -64,6 +64,7 @@ struct Model<'a> {
 }
 
 enum Msg {
+    NotClicked,
     Clicked(usize),
     Clear,
     Guess,
@@ -85,6 +86,9 @@ impl Component for Model<'static> {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
+            Msg::NotClicked => {
+                
+            }
             Msg::Clicked(index) => {
                 self.value[index] = 1.0;
             }
@@ -118,8 +122,7 @@ impl Component for Model<'static> {
                 cols.push(html! {
                     <div
                         style={format!("background-color: {}; width: 15px; height: 15px; border: 1px solid black", color)}
-                        onmousedown={ctx.link().callback(move |_| Msg::Clicked(index))}
-                        onmouseover={ctx.link().callback(move |_| Msg::Clicked(index))}
+                        onmouseover={ctx.link().callback(move |event: MouseEvent| if event.buttons() == 1 { Msg::Clicked(index) } else { Msg::NotClicked })}
                     ></div>
                 });
             }
