@@ -118,7 +118,8 @@ impl Component for Model<'static> {
                 cols.push(html! {
                     <div
                         style={format!("background-color: {}; width: 15px; height: 15px; border: 1px solid black", color)}
-                        onclick={ctx.link().callback(move |_| Msg::Clicked(index))}
+                        onmousedown={ctx.link().callback(move |_| Msg::Clicked(index))}
+                        onmouseover={ctx.link().callback(move |_| Msg::Clicked(index))}
                     ></div>
                 });
             }
@@ -126,6 +127,7 @@ impl Component for Model<'static> {
                 <div style="display: flex">{cols}</div>
             });
         }
+        
         html! {
             <div>
                 <div style="display: flex">
@@ -137,6 +139,7 @@ impl Component for Model<'static> {
             </div>
         }
     }
+    
 }
 fn main() {
     yew::Renderer::<Model>::new().render();
