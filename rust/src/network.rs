@@ -132,4 +132,19 @@ impl Network<'_> {
 		self.weights = weights;
 		self.biases = biases;
 	}
+
+	pub fn load_from_str(&mut self, save_data: &str) {
+		let save_data: SaveData = from_str(&save_data).expect("Unable to serialize save data");
+
+		let mut weights = vec![];
+		let mut biases = vec![];
+
+		for i in 0..self.layers.len() - 1 {
+			weights.push(Matrix::from(save_data.weights[i].clone()));
+			biases.push(Matrix::from(save_data.biases[i].clone()));
+		}
+
+		self.weights = weights;
+		self.biases = biases;
+	}
 }

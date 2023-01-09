@@ -77,6 +77,7 @@ impl Component for Model<'static> {
     fn create(ctx: &Context<Self>) -> Self {
         let mut nn = Network::new(vec![784, 10, 15, 10], 0.015, SIGMOID);
         // nn.load("nn.json".to_string());
+        nn.load_from_str(include_str!("../nn.json"));
         Self {
             value: [0.0; 784],
             nn,
