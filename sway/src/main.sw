@@ -1,7 +1,9 @@
 contract;
 
-dep network;
-dep utils;
+mod activations;
+mod matrix;
+mod network;
+mod utils;
 
 use network::Network;
 use std::storage::StorageVec;

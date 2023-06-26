@@ -1,8 +1,6 @@
-library utils;
+library;
 
-dep matrix;
-
-use matrix::Matrix;
+use ::matrix::Matrix;
 use std::{hash::sha256, storage::{get, store}};
 use fixed_point::ifp64::IFP64;
 

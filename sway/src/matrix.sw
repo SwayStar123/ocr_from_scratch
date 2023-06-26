@@ -1,6 +1,4 @@
-library matrix;
-
-dep activations;
+library;
 
 use fixed_point::ifp64::IFP64;
 use std::logging::log;

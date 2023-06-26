@@ -1,4 +1,4 @@
-library activations;
+library;
 
 use fixed_point::ifp64::IFP64;
 

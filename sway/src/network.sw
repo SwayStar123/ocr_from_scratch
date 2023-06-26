@@ -1,8 +1,6 @@
-library network;
+library;
 
-dep matrix;
-
-use matrix::Matrix;
+use ::matrix::Matrix;
 use std::logging::log;
 use fixed_point::ifp64::IFP64;
 
