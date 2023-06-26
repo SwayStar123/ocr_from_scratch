@@ -7,6 +7,7 @@ mod utils;
 
 use network::Network;
 use std::storage::storage_vec::*;
+use std::auth::msg_sender;
 use fixed_point::ifp64::IFP64;
 use utils::*;
 
@@ -24,11 +25,13 @@ storage {
     weights: StorageMatrixVec = StorageMatrixVec {},
     biases: StorageMatrixVec = StorageMatrixVec {},
     learning_rate: IFP64 = IFP64::zero(),
+    admin: Option<Identity> = Option::None,
 }
 
 impl MyContract for Contract {
     #[storage(read, write)]
     fn init_network(layers: Vec<u64>, learning_rate: IFP64) {
+        // assert(storage.admin.read().is_none());
         storage.learning_rate.write(learning_rate);
         let network = Network::new(layers, learning_rate);
         storage.weights.from(network.weights);
@@ -39,6 +42,7 @@ impl MyContract for Contract {
             storage.layers.push(layers.get(i).unwrap());
             i += 1;
         }
+        storage.admin.write(Option::Some(msg_sender().unwrap()));
     }
 
     #[storage(read)]
@@ -49,20 +53,33 @@ impl MyContract for Contract {
             layers.push(storage.layers.get(i).unwrap().read());
             i += 1;
         }
-        let mut network = Network { layers: layers, weights: storage.weights.to(), biases: storage.biases.to(), learning_rate: storage.learning_rate.read(), data: Vec::new()};
+        let mut network = Network {
+            layers: layers,
+            weights: storage.weights.to(),
+            biases: storage.biases.to(),
+            learning_rate: storage.learning_rate.read(),
+            data: Vec::new(),
+        };
 
         network.feed_forward(input)
     }
 
     #[storage(read, write)]
     fn back_propogate(input: Vec<IFP64>, expected: Vec<IFP64>) {
+        assert(storage.admin.read().unwrap() == Option::Some(msg_sender().unwrap()).unwrap());
         let mut layers: Vec<u64> = Vec::new();
         let mut i = 0;
         while i < storage.layers.len() {
             layers.push(storage.layers.get(i).unwrap().read());
             i += 1;
         }
-        let mut network = Network { layers: layers, weights: storage.weights.to(), biases: storage.biases.to(), learning_rate: storage.learning_rate.read(), data: Vec::new()};
+        let mut network = Network {
+            layers: layers,
+            weights: storage.weights.to(),
+            biases: storage.biases.to(),
+            learning_rate: storage.learning_rate.read(),
+            data: Vec::new(),
+        };
 
         network.back_propogate(input, expected);
 

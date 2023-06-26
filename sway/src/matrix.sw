@@ -3,7 +3,7 @@ library;
 use fixed_point::ifp64::IFP64;
 use std::logging::log;
 use ::activations::{sigmoid, sigmoid_derivative};
-use std::flags::{enable_panic_on_overflow, disable_panic_on_overflow};
+use std::flags::{disable_panic_on_overflow, enable_panic_on_overflow};
 
 pub fn zeroes_vec(ref mut vec: Vec<IFP64>, len: u64) {
     let mut i = 0;
@@ -243,7 +243,7 @@ impl Matrix {
             row_count += 1;
         }
         enable_panic_on_overflow();
-        
+
         Matrix {
             rows,
             cols,
