@@ -2,7 +2,8 @@ library;
 
 use fixed_point::ifp64::IFP64;
 use std::logging::log;
-use activations::{sigmoid, sigmoid_derivative};
+use ::activations::{sigmoid, sigmoid_derivative};
+use std::flags::{enable_panic_on_overflow, disable_panic_on_overflow};
 
 pub fn zeroes_vec(ref mut vec: Vec<IFP64>, len: u64) {
     let mut i = 0;
@@ -32,6 +33,24 @@ pub fn zeroes(rows: u64, cols: u64) -> Matrix {
         rows,
         cols,
         data,
+    }
+}
+
+pub struct LCG {
+    seed: u64,
+}
+
+impl LCG {
+    pub fn new(seed: u64) -> Self {
+        Self { seed }
+    }
+
+    pub fn next(ref mut self) -> u64 {
+        const A: u64 = 1664525;
+        const C: u64 = 1013904223;
+        const M: u64 = 100001; // Range: 0 to 100,000
+        self.seed = ((A * self.seed) + C) % M;
+        self.seed
     }
 }
 
@@ -207,9 +226,29 @@ impl Matrix {
     }
 
     pub fn random(rows: u64, cols: u64) -> Matrix {
-        let mut res = zeroes(rows, cols);
+        disable_panic_on_overflow();
+        let mut lcg = LCG::new(1);
+        let mut row_count = 0;
+        let mut data = Vec::new();
+        while row_count < rows {
+            let mut col_count = 0;
+            let mut row = Vec::new();
 
-        res
+            while col_count < cols {
+                row.push(IFP64::from_uint(lcg.next()) / IFP64::from_uint(100000));
+
+                col_count += 1;
+            }
+
+            row_count += 1;
+        }
+        enable_panic_on_overflow();
+        
+        Matrix {
+            rows,
+            cols,
+            data,
+        }
     }
 
     pub fn dot_multiply(self, other: Matrix) -> Matrix {
