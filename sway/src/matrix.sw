@@ -2,14 +2,14 @@ library matrix;
 
 dep activations;
 
-use sway_libs::ufp64::UFP64;
+use fixed_point::ifp64::IFP64;
 use std::logging::log;
 use activations::{sigmoid, sigmoid_derivative};
 
-pub fn zeroes_vec(ref mut vec: Vec<UFP64>, len: u64) {
+pub fn zeroes_vec(ref mut vec: Vec<IFP64>, len: u64) {
     let mut i = 0;
     while i < len {
-        vec.push(UFP64::zero());
+        vec.push(IFP64::zero());
         i += 1;
     }
 }
@@ -17,15 +17,14 @@ pub fn zeroes_vec(ref mut vec: Vec<UFP64>, len: u64) {
 pub struct Matrix {
     rows: u64,
     cols: u64,
-    // temporarily in UFP64 as IFP64 is not supported yet
-    data: Vec<Vec<UFP64>>,
+    data: Vec<Vec<IFP64>>,
 }
 
 pub fn zeroes(rows: u64, cols: u64) -> Matrix {
-    let mut data: Vec<Vec<UFP64>> = Vec::with_capacity(rows);
+    let mut data: Vec<Vec<IFP64>> = Vec::with_capacity(rows);
     let mut i = 0;
     while i < rows {
-        let mut row: Vec<UFP64> = Vec::with_capacity(cols);
+        let mut row: Vec<IFP64> = Vec::with_capacity(cols);
         zeroes_vec(row, cols);
         data.push(row);
         i += 1;
@@ -39,7 +38,7 @@ pub fn zeroes(rows: u64, cols: u64) -> Matrix {
 }
 
 impl Matrix {
-    pub fn new(rows: u64, cols: u64, data: Vec<Vec<UFP64>>) -> Matrix {
+    pub fn new(rows: u64, cols: u64, data: Vec<Vec<IFP64>>) -> Matrix {
         Matrix {
             rows,
             cols,
@@ -62,7 +61,7 @@ impl Matrix {
     //         data,
     //     }
     // }
-    pub fn from(data: Vec<Vec<UFP64>>) -> Matrix {
+    pub fn from(data: Vec<Vec<IFP64>>) -> Matrix {
         Matrix {
             rows: data.len(),
             cols: data.get(0).unwrap().len(),
@@ -193,7 +192,7 @@ impl Matrix {
         res
     }
 
-    pub fn multiply_every_element(self, other: UFP64) -> Matrix {
+    pub fn multiply_every_element(self, other: IFP64) -> Matrix {
         let mut res = zeroes(self.rows, self.cols);
 
         let mut i = 0;

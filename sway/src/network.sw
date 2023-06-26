@@ -4,18 +4,18 @@ dep matrix;
 
 use matrix::Matrix;
 use std::logging::log;
-use sway_libs::ufp64::UFP64;
+use fixed_point::ifp64::IFP64;
 
 pub struct Network {
     layers: Vec<u64>,
     weights: Vec<Matrix>,
     biases: Vec<Matrix>,
     data: Vec<Matrix>,
-    learning_rate: UFP64,
+    learning_rate: IFP64,
 }
 
 impl Network {
-    pub fn new(layers: Vec<u64>, learning_rate: UFP64) -> Network {
+    pub fn new(layers: Vec<u64>, learning_rate: IFP64) -> Network {
         let mut weights: Vec<Matrix> = Vec::new();
         let mut biases: Vec<Matrix> = Vec::new();
         let mut i = 0;
@@ -35,13 +35,13 @@ impl Network {
         }
     }
 
-    pub fn feed_forward(ref mut self, inputs: Vec<UFP64>) -> Vec<UFP64> {
+    pub fn feed_forward(ref mut self, inputs: Vec<IFP64>) -> Vec<IFP64> {
         if inputs.len() != self.layers.get(0).unwrap() {
             log("Invalid inputs length");
             revert(0);
         }
 
-        let mut current: Vec<Vec<UFP64>> = Vec::new();
+        let mut current: Vec<Vec<IFP64>> = Vec::new();
         current.push(inputs);
         let mut current = Matrix::from(current).transpose();
 
@@ -58,18 +58,18 @@ impl Network {
         current.transpose().data.get(0).unwrap()
     }
 
-    pub fn back_propogate(ref mut self, outputs: Vec<UFP64>, targets: Vec<UFP64>) {
+    pub fn back_propogate(ref mut self, outputs: Vec<IFP64>, targets: Vec<IFP64>) {
         if targets.len() != self.layers.get(self.layers.len() - 1).unwrap()
         {
             log("Invalid targets length");
             revert(0);
         }
 
-        let mut parsed: Vec<Vec<UFP64>> = Vec::new();
+        let mut parsed: Vec<Vec<IFP64>> = Vec::new();
         parsed.push(outputs);
         let parsed = Matrix::from(parsed);
 
-        let mut errors: Vec<Vec<UFP64>> = Vec::new();
+        let mut errors: Vec<Vec<IFP64>> = Vec::new();
         errors.push(targets);
         let mut errors = Matrix::from(errors).subtract(parsed).transpose();
 

@@ -5,28 +5,28 @@ dep utils;
 
 use network::Network;
 use std::storage::StorageVec;
-use sway_libs::ufp64::UFP64;
+use fixed_point::ifp64::IFP64;
 use utils::StorageMatrixVec;
 
 abi MyContract {
     #[storage(read, write)]
-    fn init_network(layers: Vec<u64>, learning_rate: UFP64);
+    fn init_network(layers: Vec<u64>, learning_rate: IFP64);
     #[storage(read)]
-    fn feed_forward(input: Vec<UFP64>) -> Vec<UFP64>;
+    fn feed_forward(input: Vec<IFP64>) -> Vec<IFP64>;
     #[storage(read, write)]
-    fn back_propogate(input: Vec<UFP64>, expected: Vec<UFP64>);
+    fn back_propogate(input: Vec<IFP64>, expected: Vec<IFP64>);
 }
 
 storage {
     layers: StorageVec<u64> = StorageVec {},
     weights: StorageMatrixVec = StorageMatrixVec {},
     biases: StorageMatrixVec = StorageMatrixVec {},
-    learning_rate: UFP64 = UFP64 { value: 0 },
+    learning_rate: IFP64 = IFP64 { value: 0 },
 }
 
 impl MyContract for Contract {
     #[storage(read, write)]
-    fn init_network(layers: Vec<u64>, learning_rate: UFP64) {
+    fn init_network(layers: Vec<u64>, learning_rate: IFP64) {
         storage.learning_rate = learning_rate;
         let network = Network::new(layers, learning_rate);
         storage.weights.from(network.weights);
@@ -40,7 +40,7 @@ impl MyContract for Contract {
     }
 
     #[storage(read)]
-    fn feed_forward(input: Vec<UFP64>) -> Vec<UFP64> {
+    fn feed_forward(input: Vec<IFP64>) -> Vec<IFP64> {
         let mut layers: Vec<u64> = Vec::new();
         let mut i = 0;
         while i < storage.layers.len() {
@@ -53,7 +53,7 @@ impl MyContract for Contract {
     }
 
     #[storage(read, write)]
-    fn back_propogate(input: Vec<UFP64>, expected: Vec<UFP64>) {
+    fn back_propogate(input: Vec<IFP64>, expected: Vec<IFP64>) {
         let mut layers: Vec<u64> = Vec::new();
         let mut i = 0;
         while i < storage.layers.len() {

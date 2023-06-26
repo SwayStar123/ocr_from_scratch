@@ -5,4 +5,4 @@ license = "Apache-2.0"
 name = "sway"
 
 [dependencies]
-sway_libs = { git = "https://github.com/FuelLabs/sway-libs" }
+fixed_point = { git = "https://github.com/fuellabs/sway-libs", branch = "master" }

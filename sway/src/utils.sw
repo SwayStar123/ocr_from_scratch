@@ -4,7 +4,7 @@ dep matrix;
 
 use matrix::Matrix;
 use std::{hash::sha256, storage::{get, store}};
-use sway_libs::ufp64::UFP64;
+use fixed_point::ifp64::IFP64;
 
 // for storing Vec<Matrix> in storage
 pub struct StorageMatrixVec {}
@@ -54,13 +54,13 @@ impl StorageMatrixVec {
             let rows = get::<u64>(row_hash);
 
             let mut i = 0;
-            let mut data: Vec<Vec<UFP64>> = Vec::with_capacity(rows);
+            let mut data: Vec<Vec<IFP64>> = Vec::with_capacity(rows);
             while i < rows {
                 let mut j = 0;
-                let mut row: Vec<UFP64> = Vec::with_capacity(cols);
+                let mut row: Vec<IFP64> = Vec::with_capacity(cols);
                 while j < cols {
                     let hash = sha256((__get_storage_key(), matrix_id, i, j));
-                    row.push(get::<UFP64>(hash));
+                    row.push(get::<IFP64>(hash));
                     j += 1;
                 }
                 data.push(row);
